@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QueueEase | Hospital Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            /* Premium Medical SaaS Theme */
+            --primary: #2563eb; /* Blue 600 */
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff; /* Blue 50 */
+            --sidebar-bg: #1e3a8a; /* Deep Blue 900 */
+            --sidebar-hover: #1e40af;
+            --bg-base: #f8fafc; /* Slate 50 */
+            --bg-card: #ffffff;
+            --text-main: #0f172a; /* Slate 900 */
+            --text-muted: #64748b; /* Slate 500 */
+            --border: #e2e8f0; /* Slate 200 */
+            
+            --success: #10b981; /* Emerald 500 */
+            --success-bg: #d1fae5;
+            --warning: #f59e0b; /* Amber 500 */
+            --warning-bg: #fef3c7;
+            --danger: #ef4444; /* Red 500 */
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 260px;
+            background: var(--sidebar-bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+            z-index: 10;
+        }
+
+        .brand {
+            padding: 30px 25px;
+            font-size: 24px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            letter-spacing: -0.5px;
+        }
+
+        .brand i { color: #60a5fa; }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 20px 15px;
+        }
+
+        .nav-item {
+            padding: 14px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #cbd5e1;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-item:hover {
+            color: white;
+            background: var(--sidebar-hover);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: white;
+            font-weight: 600;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        .nav-item i {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Header */
+        .header {
+            background: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            z-index: 5;
+        }
+        
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .doctor-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: var(--bg-base);
+            padding: 8px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .doctor-selector select {
+            border: none;
+            background: transparent;
+            padding: 5px;
+            font-weight: 600;
+            color: var(--primary);
+            width: 200px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Pages Container */
+        .pages-container {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .page-section {
+            display: none;
+            max-width: 1000px;
+            margin: 0 auto;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page-section.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 35px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            margin: 0 0 25px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        h2 i { color: var(--primary); }
+
+        /* Dashboard Stats Grid */
+        .dashboard-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+        .stat-card.active-filter {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .stat-icon {
+            width: 60px; height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .icon-blue { background: var(--primary-light); color: var(--primary); }
+        .icon-green { background: var(--success-bg); color: var(--success); }
+        .icon-yellow { background: var(--warning-bg); color: var(--warning); }
+
+        .stat-details h3 {
+            margin: 0;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .stat-details .value {
+            margin: 5px 0 0 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Form Inputs */
+        .form-group { margin-bottom: 20px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        select, input {
+            width: 100%;
+            padding: 14px 16px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 15px;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Priority Checkbox */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 25px;
+            padding: 15px;
+            background: var(--warning-bg);
+            border: 1px solid #fcd34d;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .checkbox-wrapper input { width: 18px; height: 18px; accent-color: var(--warning); cursor: pointer; }
+        .checkbox-wrapper span { color: #b45309; font-weight: 600; font-size: 14px; }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 6px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-main); }
+        .btn-outline:hover { background: var(--bg-base); border-color: #cbd5e1; }
+
+        /* Queue / History List Items */
+        .list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        
+        .list-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border-color: #cbd5e1;
+        }
+
+        .list-item.serving { background: var(--primary-light); border-color: #bfdbfe; }
+        .list-item.priority { border-left: 4px solid var(--warning); }
+
+        .token-circle {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .token-circle.normal { background: var(--bg-base); color: var(--text-muted); }
+        .token-circle.serving { background: var(--primary); color: white; box-shadow: 0 4px 10px rgba(37,99,235,0.3); }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge.serving { background: #dbeafe; color: #1e40af; }
+        .badge.waiting { background: var(--warning-bg); color: #b45309; }
+        .badge.completed { background: var(--success-bg); color: #047857; }
+
+        /* Setup Banner */
+        #setupBanner {
+            display: none;
+            text-align: center;
+            background: var(--success-bg);
+            border: 1px dashed var(--success);
+            border-radius: 16px;
+            padding: 50px;
+            max-width: 600px;
+            margin: 40px auto;
+        }
+
+        /* Toaster */
+        #toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            background: #1e293b;
+            color: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        #toast.show { transform: translateY(0); opacity: 1; }
+
+        /* Ticket Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .ticket-modal {
+            background: white; border-radius: 16px; padding: 40px;
+            width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .ticket-modal h3 { margin: 0 0 10px 0; color: var(--text-main); font-size: 22px; }
+        .ticket-number { font-size: 60px; font-weight: 800; color: var(--primary); margin: 10px 0; }
+        .ticket-details { font-size: 14px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.6; }
+        .ticket-details b { color: var(--text-main); }
+        .print-btn { background: var(--text-main); color: white; margin-top: 15px; }
+        .close-modal { background: #f1f5f9; color: var(--text-main); margin-top: 10px; }
+        
+        @media print {
+            body * { visibility: hidden; }
+            #ticketModalContent, #ticketModalContent * { visibility: visible; }
+            #ticketModalContent { position: absolute; left: 0; top: 0; width: 100%; text-align: left; padding: 20px; box-shadow: none; }
+            .print-btn, .close-modal { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="brand">
+            <i class="fa-solid fa-hospital"></i> QueueEase
+        </div>
+        <div class="nav-menu">
+            <div class="nav-item active" onclick="switchTab('dashboard')">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </div>
+            <div class="nav-item" onclick="switchTab('issue')">
+                <i class="fa-solid fa-ticket"></i> Issue Token
+            </div>
+            <div class="nav-item" onclick="switchTab('reception')">
+                <i class="fa-solid fa-user-nurse"></i> Reception Call
+            </div>
+            <div class="nav-item" onclick="switchTab('monitor')">
+                <i class="fa-solid fa-tv"></i> Live Monitor
+            </div>
+            <div class="nav-item" onclick="switchTab('wait')">
+                <i class="fa-solid fa-clock"></i> Estimate Wait
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="header-title" id="pageTitle">Overview Dashboard</h1>
+            
+            <div class="doctor-selector">
+                <i class="fa-solid fa-user-doctor" style="color: var(--text-muted);"></i>
+                <select id="globalDocSelect" onchange="syncDoctorChange()"></select>
+                <button class="btn btn-primary" style="width:auto; padding: 6px 12px; font-size: 13px;" onclick="refreshAllData()">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="pages-container">
+            
+            <!-- Setup Banner -->
+            <div id="setupBanner">
+                <i class="fa-solid fa-database" style="font-size: 50px; color: var(--success); margin-bottom: 20px;"></i>
+                <h2 style="justify-content: center; font-size: 24px;">Initialize System Database</h2>
+                <p style="color: #047857; margin-bottom: 30px; font-size: 15px;">System requires Demo Doctors and Patients to function.</p>
+                <button class="btn btn-primary" onclick="seedData()" style="max-width: 250px; margin: 0 auto;">
+                    <i class="fa-solid fa-gears"></i> Install Demo Data
+                </button>
+            </div>
+
+            <!-- Page 0: Dashboard (NEW FEATURE) -->
+            <div class="page-section active" id="page-dashboard">
+                <div class="dashboard-stats">
+                    <div class="stat-card active-filter" onclick="filterDashboard('ALL', this)">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-details">
+                            <h3>Total Patients Today</h3>
+                            <div class="value" id="dashTotal">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card" onclick="filterDashboard('WAITING', this)">
+                        <div class="stat-icon icon-yellow"><i class="fa-solid fa-spinner"></i></div>
+                        <div class="stat-details">
+                            <h3>Waiting in Queue</h3>
+                            <div class="value" id="dashWaiting">-</div>
+                        </div>
+                    </div>
+                    <div class="stat-card" onclick="filterDashboard('COMPLETED', this)">
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-check-double"></i></div>
+                        <div class="stat-details">
+                            <h3>Patients Served</h3>
+                            <div class="value" id="dashServed">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2><i class="fa-solid fa-clipboard-list"></i> Today's Token Log</h2>
+                    <div id="dashHistoryContainer">
+                        <div style="text-align:center; padding:30px; color:var(--text-muted);">Loading data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 1: Issue Token -->
+            <div class="page-section" id="page-issue">
+                <div class="card" style="max-width: 600px; margin: 0 auto;">
+                    <h2><i class="fa-solid fa-ticket"></i> Issue Patient Token</h2>
+                    <div class="form-group">
+                        <label>Select Patient</label>
+                        <select id="patSelect"></select>
+                    </div>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" id="priorityCheck">
+                        <span><i class="fa-solid fa-triangle-exclamation" style="margin-right: 5px;"></i> Priority / Emergency Case</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="generateToken(this)" style="padding: 16px; font-size: 16px;">
+                        <i class="fa-solid fa-plus-circle"></i> Generate Token
+                    </button>
+                </div>
+            </div>
+
+            <!-- Page 2: Reception -->
+            <div class="page-section" id="page-reception">
+                <div class="card" style="text-align: center; padding: 50px;">
+                    <div style="font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Currently Serving Patient</div>
+                    <div id="currentServingDisplay" style="font-size: 60px; font-weight: 800; color: var(--primary); margin: 20px 0;">-</div>
+                    
+                    <button class="btn btn-primary" onclick="advanceQueue(this)" style="max-width: 300px; margin: 30px auto 0; padding: 18px; font-size: 16px;">
+                        <i class="fa-solid fa-bullhorn"></i> Call Next Patient
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Page 3: Monitor -->
+            <div class="page-section" id="page-monitor">
+                <div class="card">
+                    <h2><i class="fa-solid fa-desktop"></i> Live Queue Monitor</h2>
+                    <div id="queueContainer">
+                        <div style="text-align:center; padding:40px; color:var(--text-muted);">Loading queue data...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page 4: Wait Time -->
+            <div class="page-section" id="page-wait">
+                <div class="card" style="max-width: 500px; margin: 0 auto;">
+                    <h2><i class="fa-solid fa-hourglass-start"></i> Check Wait Time</h2>
+                    <div class="form-group" style="margin-bottom: 30px;">
+                        <label>Enter Token ID</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="tokenIdInput" placeholder="Token ID">
+                            <button class="btn btn-primary" style="width: auto; padding: 0 25px;" onclick="checkWaitTime(this)">
+                                <i class="fa-solid fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                        <div style="padding: 20px; background: var(--bg-base); border: 1px solid var(--border); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 500; color: var(--text-muted);">Queue Position</span>
+                            <span id="tokensAheadDisplay" style="font-size: 24px; font-weight: 700; color: var(--text-main);">-</span>
+                        </div>
+                        <div style="padding: 20px; background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: var(--primary);">Estimated Wait</span>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary);">
+                                <span id="estWaitDisplay">-</span> <span style="font-size: 14px;">min</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">
+        <i id="toastIcon" class="fa-solid fa-circle-info"></i>
+        <div id="toastMsg" style="font-weight: 500; font-size: 14px;">Message</div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div class="modal-overlay" id="ticketModalOverlay">
+        <div class="ticket-modal" id="ticketModalContent">
+            <i class="fa-solid fa-hospital-user" style="font-size: 40px; color: var(--primary); margin-bottom: 15px;"></i>
+            <h3>QueueEase Token</h3>
+            <div style="font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Your Number</div>
+            <div class="ticket-number" id="ticketNumDisplay">00</div>
+            
+            <div class="ticket-details">
+                Patient: <b id="ticketPatName">-</b><br>
+                Token ID (For Wait Time): <b id="ticketIdDisplay">-</b><br>
+                Doctor: <b id="ticketDocName">-</b><br>
+                Generated: <b id="ticketDate">-</b>
+            </div>
+            
+            <button class="btn print-btn" onclick="window.print()">
+                <i class="fa-solid fa-print"></i> Print Ticket
+            </button>
+            <button class="btn close-modal" onclick="closeTicketModal()">
+                Done
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api';
+        
+        // Navigation Titles
+        const pageTitles = {
+            'dashboard': 'Overview Dashboard',
+            'issue': 'Issue Token',
+            'reception': 'Reception Control',
+            'monitor': 'Live Queue Monitor',
+            'wait': 'Estimate Wait Time'
+        };
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${tabId}`).classList.add('active');
+            
+            document.getElementById('pageTitle').innerText = pageTitles[tabId];
+            
+            if(tabId === 'monitor') loadQueue();
+            if(tabId === 'dashboard') loadDashboard();
+        }
+
+        async function initApp() {
+            try {
+                const [docsRes, patsRes] = await Promise.all([
+                    fetch(`${API_URL}/doctors`), fetch(`${API_URL}/patients`)
+                ]);
+                const doctors = await docsRes.json();
+                const patients = await patsRes.json();
+
+                if (doctors.length === 0 || patients.length === 0) {
+                    document.getElementById('setupBanner').style.display = 'block';
+                    document.getElementById('sidebar').style.display = 'none';
+                    document.querySelector('.header').style.display = 'none';
+                    document.querySelectorAll('.page-section').forEach(el => el.style.display = 'none');
+                } else {
+                    document.getElementById('setupBanner').style.display = 'none';
+                    populateDropdowns(doctors, patients);
+                    refreshAllData();
+                }
+            } catch (err) {
+                showToast("Cannot connect to server.", "error");
+            }
+        }
+
+        function populateDropdowns(doctors, patients) {
+            const formatDocName = (name) => {
+                const cleanName = name.replace(/^(Dr\.\s*|Dr\s*)+/gi, '').trim();
+                return `Dr. ${cleanName}`;
+            };
+            
+            const docOpts = doctors.map(d => `<option value="${d.id}">${formatDocName(d.name)} - ${d.specialization}</option>`).join('');
+            document.getElementById('globalDocSelect').innerHTML = docOpts;
+            document.getElementById('patSelect').innerHTML = patients.map(p => `<option value="${p.id}">${p.name} (${p.phoneNumber})</option>`).join('');
+        }
+
+        function syncDoctorChange() {
+            refreshAllData();
+        }
+
+        function refreshAllData() {
+            loadDashboard();
+            loadQueue();
+        }
+
+        async function seedData() {
+            try {
+                await fetch(`${API_URL}/doctors`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name: "Sarah Smith", specialization: "Cardiology", averageConsultationTime: 15 })
+                });
+                await fetch(`${API_URL}/patients`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name: "John Doe", phoneNumber: "9876543210" })
+                });
+                showToast("Demo Data Successfully Added!", "success");
+                setTimeout(() => window.location.reload(), 1000);
+            } catch (e) {
+                showToast("Failed to add demo data", "error");
+            }
+        }
+
+        async function loadDashboard() {
+            const docId = document.getElementById('globalDocSelect').value;
+            if(!docId) return;
+            
+            try {
+                const dateVal = new Date().toISOString().split('T')[0]; // Today
+                const res = await fetch(`${API_URL}/tokens/history/${docId}?date=${dateVal}`);
+                if (res.ok) {
+                    const tokens = await res.json();
+                    window.dashboardTokens = tokens; // Store for filtering
+                    
+                    document.getElementById('dashTotal').innerText = tokens.length;
+                    document.getElementById('dashWaiting').innerText = tokens.filter(t => t.status === 'WAITING').length;
+                    document.getElementById('dashServed').innerText = tokens.filter(t => t.status === 'COMPLETED').length;
+                    
+                    // Reset filter UI to 'ALL'
+                    document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active-filter'));
+                    document.querySelector('.stat-card').classList.add('active-filter');
+                    
+                    renderDashboardHistory(tokens);
+                }
+            } catch (e) {}
+        }
+
+        function filterDashboard(status, element) {
+            document.querySelectorAll('.stat-card').forEach(el => el.classList.remove('active-filter'));
+            element.classList.add('active-filter');
+            
+            if(!window.dashboardTokens) return;
+            
+            if(status === 'ALL') {
+                renderDashboardHistory(window.dashboardTokens);
+            } else {
+                renderDashboardHistory(window.dashboardTokens.filter(t => t.status === status));
+            }
+        }
+
+        function renderDashboardHistory(tokensList) {
+            const container = document.getElementById('dashHistoryContainer');
+            if(tokensList.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">No records found for this category.</div>`;
+                return;
+            }
+            
+            let html = '';
+            [...tokensList].reverse().forEach(t => { 
+                html += `
+                    <div class="list-item" style="padding: 15px 20px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="font-weight: 700; color: var(--text-muted);">#${t.tokenNumber}</div>
+                            <div style="width: 1px; height: 20px; background: var(--border);"></div>
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">Token #${t.tokenNumber} (ID: ${t.id})</div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px;">
+                                    Generated: ${new Date(t.generatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="badge ${t.status.toLowerCase()}">${t.status}</div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        async function generateToken(btn) {
+            btn.disabled = true;
+            const docId = document.getElementById('globalDocSelect').value;
+            const payload = {
+                doctorId: docId,
+                patientId: document.getElementById('patSelect').value,
+                priority: document.getElementById('priorityCheck').checked
+            };
+
+            try {
+                const res = await fetch(`${API_URL}/tokens`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    
+                    // Show Ticket Modal
+                    document.getElementById('ticketNumDisplay').innerText = data.tokenNumber;
+                    document.getElementById('ticketIdDisplay').innerText = data.id;
+                    
+                    const patSelect = document.getElementById('patSelect');
+                    document.getElementById('ticketPatName').innerText = patSelect.options[patSelect.selectedIndex].text.split('(')[0].trim();
+                    const docSelect = document.getElementById('globalDocSelect');
+                    document.getElementById('ticketDocName').innerText = docSelect.options[docSelect.selectedIndex].text.split('-')[0].trim();
+                    document.getElementById('ticketDate').innerText = new Date(data.generatedAt).toLocaleString();
+                    
+                    document.getElementById('ticketModalOverlay').style.display = 'flex';
+                    
+                    document.getElementById('priorityCheck').checked = false;
+                    refreshAllData();
+                } else {
+                    const err = await res.json();
+                    showToast(err.message, "error");
+                }
+            } catch (e) {
+                showToast("Connection failed", "error");
+            }
+            btn.disabled = false;
+        }
+
+        async function advanceQueue(btn) {
+            btn.disabled = true;
+            const docId = document.getElementById('globalDocSelect').value;
+            try {
+                const res = await fetch(`${API_URL}/tokens/serve/${docId}`, { method: 'PUT' });
+                if (res.status === 204) showToast("Queue is empty", "warning");
+                else if (res.ok) {
+                    const data = await res.json();
+                    showToast(`Now Serving Token #${data.tokenNumber}`, "success");
+                } else {
+                    const err = await res.json();
+                    showToast(err.message, "error");
+                }
+                refreshAllData();
+            } catch (e) {
+                showToast("Connection failed", "error");
+            }
+            btn.disabled = false;
+        }
+
+        async function checkWaitTime(btn) {
+            const tokenId = document.getElementById('tokenIdInput').value;
+            if(!tokenId) return showToast("Enter Token ID", "warning");
+            
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            try {
+                const res = await fetch(`${API_URL}/tokens/${tokenId}/wait-time`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('tokensAheadDisplay').innerText = data.tokensAhead;
+                    document.getElementById('estWaitDisplay').innerText = data.estimatedWaitTime;
+                } else {
+                    const err = await res.json();
+                    showToast(err.message, "error");
+                }
+            } catch (e) {
+                showToast("Connection failed", "error");
+            }
+            btn.innerHTML = originalHtml;
+        }
+
+        async function loadQueue() {
+            const docId = document.getElementById('globalDocSelect').value;
+            if(!docId) return;
+            const container = document.getElementById('queueContainer');
+            const servingDisp = document.getElementById('currentServingDisplay');
+            
+            try {
+                const res = await fetch(`${API_URL}/tokens/queue/${docId}`);
+                if (res.ok) {
+                    const tokens = await res.json();
+                    if (tokens.length === 0) {
+                        container.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-muted);">Queue is empty.</div>`;
+                        servingDisp.innerText = '-';
+                        return;
+                    }
+                    let html = '', servingFound = false;
+                    tokens.forEach(t => {
+                        const isServing = t.status === 'SERVING';
+                        if (isServing) { servingFound = true; servingDisp.innerText = `Token #${t.tokenNumber}`; }
+                        
+                        html += `
+                            <div class="list-item ${isServing ? 'serving' : ''} ${t.priority ? 'priority' : ''}">
+                                <div style="display: flex; align-items: center; gap: 20px;">
+                                    <div class="token-circle ${isServing ? 'serving' : 'normal'}">${t.tokenNumber}</div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 15px;">
+                                            ${t.priority ? '<i class="fa-solid fa-triangle-exclamation" style="color:var(--warning);"></i> ' : ''}
+                                            Token #${t.tokenNumber} <span style="color:var(--text-muted); font-weight: 500; font-size: 13px;">(ID: ${t.id})</span>
+                                        </div>
+                                        <div style="font-size: 13px; color: var(--text-muted); margin-top: 5px;">
+                                            <i class="fa-regular fa-clock"></i> Arrived at ${new Date(t.generatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="badge ${isServing ? 'serving' : 'waiting'}">${isServing ? 'Serving Now' : 'Waiting'}</div>
+                            </div>`;
+                    });
+                    container.innerHTML = html;
+                    if(!servingFound) servingDisp.innerText = '-';
+                }
+            } catch (e) {}
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            
+            document.getElementById('toastMsg').innerText = msg;
+            toast.style.borderLeft = `4px solid var(--${type})`;
+            
+            if(type === 'success') { icon.className = 'fa-solid fa-circle-check'; icon.style.color = 'var(--success)'; }
+            else if(type === 'error') { icon.className = 'fa-solid fa-circle-xmark'; icon.style.color = 'var(--danger)'; }
+            else { icon.className = 'fa-solid fa-triangle-exclamation'; icon.style.color = 'var(--warning)'; }
+            
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticketModalOverlay').style.display = 'none';
+        }
+
+        initApp();
+    </script>
+</body>
+</html>
